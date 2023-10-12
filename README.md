@@ -1,2 +1,40 @@
-# ej2-react-appointment-planner
-ej2-react-appointment-planner
+# Essential JS 2 for React - Appointment Planner
+
+This React Appointment planner demo application showcases the usage of several Essential JS 2 React components in a real world application scenario. This demo explores an appointment scheduling application for doctors in a clinic to manage their appointments with patients.
+
+## Deployment
+
+### Installation
+
+To install the application dependencies, use the following command:
+
+```sh
+npm install
+```
+
+### Build the application
+
+To Build the application, use the below command,
+
+```sh
+npm run build
+```
+
+### Run the application
+
+To run the sample in the browser with live reload, use the following command:
+
+```sh
+npm run start
+```
+
+## Demo
+
+### <a href="https://ej2.syncfusion.com/showcase/react/appointmentplanner/" target="_blank">https://ej2.syncfusion.com/showcase/react/appointmentplanner/</a>
+
+Check all the showcase samples from <a href="https://ej2.syncfusion.com/home/react.html" target="_blank">here</a>.
+
+## Note
+
+If you see a license banner when running your application, it means that you need to obtain a license key and register it within the application in order to use Syncfusion components. You can find more information on how to obtain and register a license key on our 
+<a href="https://ej2.syncfusion.com/react/documentation/licensing/overview" target="_blank">Licensing overview</a> page.

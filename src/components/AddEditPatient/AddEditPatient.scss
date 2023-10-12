@@ -1,0 +1,64 @@
+.new-patient-dialog {
+    max-height: 98% !important;
+
+    .e-dlg-content {
+        #new-patient-form {
+            .field-container {
+                padding-bottom: 16px;
+            }
+
+            .gender-container,
+            .contact-container {
+                display: flex;
+
+                .gender {
+                    padding-right: 8px;
+                    flex: 1;
+
+                    .e-btn-group input:checked+label.e-btn {
+                        background-color: #e6e6e6;
+                        border-color: #adadad;
+                        box-shadow: inset 0 3px 5px #00000020;
+                        color: #333;
+                        outline: 0 solid #fff;
+                        outline-offset: 0;
+                    }
+                }
+
+                .mobile {
+                    padding-left: 8px;
+                    flex: 1;
+                }
+            }
+
+            .contact-container .blood-group,
+            .gender-container .dob {
+                padding-left: 8px;
+                flex: 1;
+            }
+
+            .gender-container {
+                .gender {
+                    display: flex;
+                    flex-direction: column;
+
+                    label:not(.e-btn) {
+                        font-weight: bold;
+                        color: #333;
+                        font-size: 12px;
+                        font-family: "Helvetica Neue", "Helvetica", "Arial", sans-serif, "-apple-system", "BlinkMacSystemFont";
+                    }
+
+                    .e-btn-group {
+                        height: 32px;
+                        margin-top: 8px;
+
+                        label {
+                            width: 50%;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
