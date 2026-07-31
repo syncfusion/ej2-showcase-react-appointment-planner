@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { DropDownList, Variant } from '@syncfusion/react-dropdowns';
 import { CalendarSettings } from '../../models/calendar-settings';
 import {
@@ -14,19 +14,45 @@ import './Preference.scss';
 export const Preference = () => {
   const dataService = useData();
   const dispatch = useDataDispatch();
-  let timeSlots: Record<string, any>[] = scheduleSlots;
-  let startHours: Record<string, any>[] = scheduleStartHours;
-  let endHours: Record<string, any>[] = scheduleEndHours;
-  let views: Record<string, any>[] = scheduleViews;
-  let colorCategory: Record<string, any>[] = scheduleColorCategory;
-  let dayOfWeeks: Record<string, any>[] = dayOfWeekList;
-  let fields: Record<string, any> = { text: 'Text', value: 'Value' };
-  let calendarSettings: CalendarSettings = dataService.calendarSettings;
-  let width = Browser.isDevice ? '100%' : '335px';
+
+  // Data sources
+  const timeSlots: Record<string, any>[] = scheduleSlots;
+  const startHours: Record<string, any>[] = scheduleStartHours;
+  const endHours: Record<string, any>[] = scheduleEndHours;
+  const views: Record<string, any>[] = scheduleViews;
+  const colorCategory: Record<string, any>[] = scheduleColorCategory;
+  const dayOfWeeks: Record<string, any>[] = dayOfWeekList;
+  const fields: Record<string, any> = { text: 'Text', value: 'Value' };
+
+  // Current saved settings (the source of truth for defaults)
+  const savedSettings: CalendarSettings = dataService.calendarSettings;
+
+  // Controlled state — initialized from the saved settings so the
+  // current user choice becomes the default selected value.
+  const [currentView, setCurrentView] = useState<string | number>(savedSettings.currentView);
+  const [calendarStart, setCalendarStart] = useState<string>(savedSettings.calendar.start);
+  const [calendarEnd, setCalendarEnd] = useState<string>(savedSettings.calendar.end);
+  const [interval, setInterval] = useState<number>(savedSettings.interval);
+  const [bookingColor, setBookingColor] = useState<string>(savedSettings.bookingColor);
+  const [firstDayOfWeek, setFirstDayOfWeek] = useState<number>(savedSettings.firstDayOfWeek);
+
+  // Helper to push the new settings into the global context
+  const applySettings = (next: Partial<CalendarSettings>) => {
+    const merged: CalendarSettings = {
+      bookingColor: next.bookingColor ?? bookingColor,
+      calendar: next.calendar ?? { start: calendarStart, end: calendarEnd },
+      currentView: (next.currentView ?? currentView) as CalendarSettings['currentView'],
+      interval: next.interval ?? interval,
+      firstDayOfWeek: next.firstDayOfWeek ?? firstDayOfWeek
+    };
+    dispatch({ type: 'UPDATE_CALENDAR_SETTINGS', data: merged });
+  };
 
   useEffect(() => {
     updateActiveItem('preference');
   }, []);
+
+  const width = Browser.isDevice ? '100%' : '335px';
 
   return (
     <div className='preference-container'>
@@ -46,8 +72,13 @@ export const Preference = () => {
           dataSource={views}
           fields={fields}
           variant={Variant.Outlined}
-          value={views[1].Value}
-          style={{width:'335px'}}
+          value={currentView}
+          style={{ width: '335px' }}
+          onChange={(e: any) => {
+            const v = e.value;
+            setCurrentView(v);
+            applySettings({ currentView: v });
+          }}
         />
       </div>
 
@@ -60,8 +91,13 @@ export const Preference = () => {
           dataSource={startHours}
           fields={fields}
           variant={Variant.Outlined}
-          value={startHours[0].Value}
-          style={{width:'335px'}}
+          value={calendarStart}
+          style={{ width: '335px' }}
+          onChange={(e: any) => {
+            const v: string = e.value;
+            setCalendarStart(v);
+            applySettings({ calendar: { start: v, end: calendarEnd } });
+          }}
         />
       </div>
 
@@ -74,8 +110,13 @@ export const Preference = () => {
           dataSource={endHours}
           fields={fields}
           variant={Variant.Outlined}
-          value={endHours[0].Value}
-          style={{width:'335px'}}
+          value={calendarEnd}
+          style={{ width: '335px' }}
+          onChange={(e: any) => {
+            const v: string = e.value;
+            setCalendarEnd(v);
+            applySettings({ calendar: { start: calendarStart, end: v } });
+          }}
         />
       </div>
 
@@ -88,8 +129,13 @@ export const Preference = () => {
           dataSource={timeSlots}
           fields={fields}
           variant={Variant.Outlined}
-          value={timeSlots[2].Value}
-          style={{width:'335px'}}
+          value={interval}
+          style={{ width: '335px' }}
+          onChange={(e: any) => {
+            const v: number = e.value;
+            setInterval(v);
+            applySettings({ interval: v });
+          }}
         />
       </div>
 
@@ -102,8 +148,13 @@ export const Preference = () => {
           dataSource={colorCategory}
           fields={fields}
           variant={Variant.Outlined}
-          value={colorCategory[0].Value}
-          style={{width:'335px'}}
+          value={bookingColor}
+          style={{ width: '335px' }}
+          onChange={(e: any) => {
+            const v: string = e.value;
+            setBookingColor(v);
+            applySettings({ bookingColor: v });
+          }}
         />
       </div>
 
@@ -116,8 +167,13 @@ export const Preference = () => {
           dataSource={dayOfWeeks}
           fields={fields}
           variant={Variant.Outlined}
-          value={dayOfWeeks[0].Value}
-          style={{width:'335px'}}
+          value={firstDayOfWeek}
+          style={{ width: '335px' }}
+          onChange={(e: any) => {
+            const v: number = e.value;
+            setFirstDayOfWeek(v);
+            applySettings({ firstDayOfWeek: v });
+          }}
         />
       </div>
     </div>

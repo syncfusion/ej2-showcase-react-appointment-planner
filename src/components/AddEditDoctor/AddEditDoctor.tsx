@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useRef, useEffect, forwardRef, useImperativeHandle, MutableRefObject, useState } from 'react';
-import { isNullOrUndefined, Variant } from '@syncfusion/react-base';
-import { Button, Color } from '@syncfusion/react-buttons';
+import { Color, isNullOrUndefined, Variant } from '@syncfusion/react-base';
+import { Button } from '@syncfusion/react-buttons';
 import { FormValidator, MaskedTextBoxComponent } from '@syncfusion/ej2-react-inputs';
 import { TextBox } from '@syncfusion/react-inputs';
 import { EJ2Instance } from '@syncfusion/ej2-react-schedule';
@@ -17,33 +17,44 @@ interface AddEditDoctorProps {
     calendarDropDownObj?: MutableRefObject<any>;
 }
 
+type FormErrors = {
+    Name?: string;
+    Mobile?: string;
+    Email?: string;
+    Education?: string;
+};
+
 export const AddEditDoctor = forwardRef(({ refreshDoctors, calendarDropDownObj }: AddEditDoctorProps, ref) => {
     const dataService = useData();
     const dispatch = useDataDispatch();
     const activityDispatch = useActivityDispatch();
     const newDoctorObj = useRef<any>(null);
+    const mobileRef = useRef<MaskedTextBoxComponent | null>(null);
 
     // Static data
     const specializationData: Record<string, any>[] = specializationList;
     const experienceData: Record<string, any>[] = experienceList;
     const dutyTimingsData: Record<string, any>[] = dutyTimingsList;
     const fields: Record<string, any> = { text: 'Text', value: 'Id' };
-    const availabilityOptions: Record<string, any>[] = [
-        { Text: 'Available', Value: 'available' },
-        { Text: 'Unavailable', Value: 'unavailable' }
-    ];
 
     // Dialog state
     const [isOpen, setIsOpen] = useState(false);
     const [dialogState, setDialogState] = useState<'new' | 'edit'>('new');
     const [title, setTitle] = useState('New Doctor');
 
-    // Controlled form state
+    // Controlled form state (dropdowns + validated text fields)
     const [specialization, setSpecialization] = useState<string | number>(specializationData[0].Id);
     const [experience, setExperience] = useState<string | number>(experienceData[0].Id);
     const [dutyTiming, setDutyTiming] = useState<string | number>(dutyTimingsData[0].Id);
-    const [availability, setAvailability] = useState<string>('available');
     const [mobile, setMobile] = useState<string>('');
+
+    // Controlled state for validated text fields (drives the red border + helper text)
+    const [name, setName] = useState<string>('');
+    const [email, setEmail] = useState<string>('');
+    const [education, setEducation] = useState<string>('');
+    const [designation, setDesignation] = useState<string>('');
+
+    const [formErrors, setFormErrors] = useState<FormErrors>({});
 
     useImperativeHandle(ref, () => ({
         showDetails() {
@@ -57,6 +68,53 @@ export const AddEditDoctor = forwardRef(({ refreshDoctors, calendarDropDownObj }
             setIsOpen(true);
         }
     }));
+
+    const validateForm = (): boolean => {
+        const errors: FormErrors = {};
+
+        if (!name.trim()) {
+            errors.Name = 'Enter valid name';
+        }
+
+        // Mobile: must be EXACTLY 10 digits
+        const digitsOnly = mobile.replace(/\D/g, '');
+        if (digitsOnly.length === 0) {
+            errors.Mobile = 'Enter valid mobile number';
+        } else if (digitsOnly.length !== 10) {
+            errors.Mobile = 'Mobile number must be 10 digits';
+        }
+
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email.trim()) {
+            errors.Email = 'Enter valid email';
+        } else if (!emailPattern.test(email.trim())) {
+            errors.Email = 'Email address is invalid';
+        }
+
+        if (!education.trim()) {
+            errors.Education = 'Enter valid education';
+        }
+
+        setFormErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
+    // Toggle the red border class on the EJ2 MaskedTextBox wrapper imperatively.
+    // We can't pass `className` as a dynamic template literal — the EJ2 wrapper
+    // splits the previous className and calls classList.remove('') which throws
+    // when the string contains an empty token.
+    useEffect(() => {
+        const instance: any = mobileRef.current;
+        if (!instance || !instance.element) {
+            return;
+        }
+        const wrapper: HTMLElement = instance.element.closest('.e-input-group') || instance.element;
+        if (formErrors.Mobile) {
+            wrapper.classList.add('e-error');
+        } else {
+            wrapper.classList.remove('e-error');
+        }
+    }, [formErrors.Mobile]);
 
     // Prefill or reset form when the dialog opens
     useEffect(() => {
@@ -75,12 +133,15 @@ export const AddEditDoctor = forwardRef(({ refreshDoctors, calendarDropDownObj }
             if (obj['DutyTiming'] !== undefined && obj['DutyTiming'] !== null) {
                 setDutyTiming(obj['DutyTiming']);
             }
-            if (obj['Availability'] !== undefined && obj['Availability'] !== null) {
-                setAvailability(obj['Availability']);
+            if (obj['Mobile']) {
+                setMobile(String(obj['Mobile']).replace(/[ -.*+?^${}()|[\]\\]/g, ''));
             }
-            setMobile(obj['Mobile'] || '');
+            setName(obj['Name'] || '');
+            setEmail(obj['Email'] || '');
+            setEducation(obj['Education'] || '');
+            setDesignation(obj['Designation'] || '');
 
-            // Push values into the uncontrolled EJ2 inputs
+            // Push values into the uncontrolled EJ2 inputs (Gender radios only now)
             setTimeout(() => {
                 const formElements: HTMLElement[] = [].slice.call(
                     document.querySelectorAll('.new-doctor-dialog .e-field')
@@ -94,22 +155,12 @@ export const AddEditDoctor = forwardRef(({ refreshDoctors, calendarDropDownObj }
                         continue;
                     }
                     const columnName: string = inputElement.name;
-                    if (!columnName) {
-                        continue;
-                    }
                     if (columnName === 'Gender') {
-                        if (obj[columnName] === 'Male') {
-                            inputElement.checked = true;
-                        } else if (obj[columnName] === 'Female') {
+                        if (obj[columnName] === 'Female') {
                             (curElement.querySelectorAll('input')[1] as HTMLInputElement).checked = true;
+                        } else {
+                            inputElement.checked = true;
                         }
-                    } else if (columnName === 'Mobile') {
-                        const maskedInstance: any = (inputElement as any).ej2_instances?.[0];
-                        if (maskedInstance && obj[columnName]) {
-                            maskedInstance.value = String(obj[columnName]).replace(/[ -.*+?^${}()|[\]\\]/g, '');
-                        }
-                    } else {
-                        inputElement.value = (obj[columnName] as string) || '';
                     }
                 }
             }, 150);
@@ -118,8 +169,12 @@ export const AddEditDoctor = forwardRef(({ refreshDoctors, calendarDropDownObj }
             setSpecialization(specializationData[0].Id);
             setExperience(experienceData[0].Id);
             setDutyTiming(dutyTimingsData[0].Id);
-            setAvailability('available');
             setMobile('');
+            setName('');
+            setEmail('');
+            setEducation('');
+            setDesignation('');
+            setFormErrors({});
 
             setTimeout(() => {
                 const formElements: HTMLElement[] = [].slice.call(
@@ -130,22 +185,8 @@ export const AddEditDoctor = forwardRef(({ refreshDoctors, calendarDropDownObj }
                         continue;
                     }
                     const inputElement: HTMLInputElement = curElement.querySelector('input');
-                    if (!inputElement) {
-                        continue;
-                    }
-                    const columnName: string = inputElement.name;
-                    if (!columnName) {
-                        continue;
-                    }
-                    if (columnName === 'Gender') {
+                    if (inputElement && inputElement.name === 'Gender') {
                         inputElement.checked = true;
-                    } else if (columnName === 'Mobile') {
-                        const maskedInstance: any = (inputElement as any).ej2_instances?.[0];
-                        if (maskedInstance) {
-                            maskedInstance.value = '';
-                        }
-                    } else {
-                        inputElement.value = '';
                     }
                 }
             }, 150);
@@ -189,49 +230,28 @@ export const AddEditDoctor = forwardRef(({ refreshDoctors, calendarDropDownObj }
     };
 
     const onSaveClick = (): void => {
-        const formElementContainer: HTMLElement = document.querySelector('.new-doctor-dialog #new-doctor-form');
-        if (
-            formElementContainer &&
-            formElementContainer.classList.contains('e-formvalidator') &&
-            !((formElementContainer as EJ2Instance).ej2_instances[0] as FormValidator).validate()
-        ) {
+        // Run React-native validation
+        if (!validateForm()) {
             return;
         }
 
         let obj: Record<string, any> = dialogState === 'new' ? {} : { ...dataService.activeDoctorData };
 
-        // Collect uncontrolled EJ2 inputs (TextBox + Gender + Mobile fallback)
-        const formElements: HTMLElement[] = [].slice.call(
-            document.querySelectorAll('.new-doctor-dialog .e-field')
-        );
-        for (const curElement of formElements) {
-            if (curElement.classList.contains('e-ddl')) {
-                continue;
-            }
-            const inputElement: HTMLInputElement = curElement.querySelector('input');
-            if (!inputElement) {
-                continue;
-            }
-            const columnName: string = inputElement.name;
-            if (!columnName) {
-                continue;
-            }
-            if (columnName === 'Gender') {
-                obj[columnName] = inputElement.checked ? 'Male' : 'Female';
-            } else if (columnName === 'Mobile') {
-                const maskedInstance: any = (inputElement as any).ej2_instances?.[0];
-                obj[columnName] = maskedInstance ? maskedInstance.value : inputElement.value;
-            } else {
-                obj[columnName] = inputElement.value;
-            }
-        }
+        // Read Gender (still uncontrolled)
+        const genderInput: HTMLInputElement | null = document.querySelector(
+            '.new-doctor-dialog .e-btn-group input[name="Gender"]:checked'
+        ) as HTMLInputElement | null;
+        obj['Gender'] = genderInput ? (genderInput.value as string) : 'Male';
 
-        // Override with controlled state for the dropdowns + mobile
+        // Use controlled state
+        obj['Name'] = name.trim();
+        obj['Email'] = email.trim();
+        obj['Education'] = education.trim();
+        obj['Designation'] = designation.trim();
         obj['Specialization'] = specialization;
         obj['Experience'] = experience;
         obj['DutyTiming'] = dutyTiming;
-        obj['Availability'] = availability;
-        obj['Mobile'] = mobile;
+        obj['Mobile'] = mobile.replace(/\D/g, '');
 
         // Derive DepartmentId from the selected specialization
         const selectedSpec: Record<string, any> | undefined = specializationData.find(
@@ -309,10 +329,23 @@ export const AddEditDoctor = forwardRef(({ refreshDoctors, calendarDropDownObj }
                 footer={footerTemplate()}
                 onClose={() => setIsOpen(false)}
             >
-                <form id="new-doctor-form">
+                <form id="new-doctor-form" noValidate>
                     <div className="name-container">
-                        <TextBox id="Name" name="Name" className="doctor-name e-field"
-                            placeholder="Doctor Name" labelMode="Always" variant={Variant.Outlined} />
+                        <TextBox
+                            id="Name"
+                            name="Name"
+                            className="doctor-name e-field"
+                            placeholder="Doctor Name"
+                            labelMode="Always"
+                            variant={Variant.Outlined}
+                            value={name}
+                            color={formErrors.Name ? Color.Error : undefined}
+                            helperText={formErrors.Name || ''}
+                            onChange={(e: any) => {
+                                setName(e?.value ?? '');
+                                if (formErrors.Name) setFormErrors({ ...formErrors, Name: undefined });
+                            }}
+                        />
                     </div>
 
                     <div className="gender-container">
@@ -328,20 +361,40 @@ export const AddEditDoctor = forwardRef(({ refreshDoctors, calendarDropDownObj }
                         <div className="mobile">
                             <div><label>Mobile Number</label></div>
                             <MaskedTextBoxComponent
-                                id="DoctorMobile"
-                                name="Mobile"
-                                className="e-field"
-                                placeholder="Mobile Number"
-                                mask="(999) 999-9999"
-                                value={mobile}
-                                change={(e: any) => setMobile(e.value ?? '')}
-                            />
+    id="DoctorMobile"
+    name="Mobile"
+    className="e-field"
+    mask="(999) 999-9999"
+    floatLabelType="Always"
+    value={mobile}
+    ref={mobileRef as any}
+    change={(e: any) => {
+        setMobile(e?.value ?? '');
+        if (formErrors.Mobile) setFormErrors({ ...formErrors, Mobile: undefined });
+    }}
+/>
+{formErrors.Mobile && (
+    <div className="field-error-msg">{formErrors.Mobile}</div>
+)}
                         </div>
                     </div>
 
                     <div className="email-container">
-                        <TextBox id="Email" name="Email" className="e-field"
-                            placeholder="Email" labelMode="Always" variant={Variant.Outlined} />
+                        <TextBox
+                            id="Email"
+                            name="Email"
+                            className="e-field"
+                            placeholder="Email"
+                            labelMode="Always"
+                            variant={Variant.Outlined}
+                            value={email}
+                            color={formErrors.Email ? Color.Error : undefined}
+                            helperText={formErrors.Email || ''}
+                            onChange={(e: any) => {
+                                setEmail(e?.value ?? '');
+                                if (formErrors.Email) setFormErrors({ ...formErrors, Email: undefined });
+                            }}
+                        />
                     </div>
 
                     <div className="education-container">
@@ -360,8 +413,21 @@ export const AddEditDoctor = forwardRef(({ refreshDoctors, calendarDropDownObj }
                             />
                         </div>
                         <div className="education">
-                            <TextBox id="Education" name="Education" className="e-field"
-                                placeholder="Education" labelMode="Always" variant={Variant.Outlined} />
+                            <TextBox
+                                id="Education"
+                                name="Education"
+                                className="e-field"
+                                placeholder="Education"
+                                labelMode="Always"
+                                variant={Variant.Outlined}
+                                value={education}
+                                color={formErrors.Education ? Color.Error : undefined}
+                                helperText={formErrors.Education || ''}
+                                onChange={(e: any) => {
+                                    setEducation(e?.value ?? '');
+                                    if (formErrors.Education) setFormErrors({ ...formErrors, Education: undefined });
+                                }}
+                            />
                         </div>
                     </div>
 
@@ -381,8 +447,16 @@ export const AddEditDoctor = forwardRef(({ refreshDoctors, calendarDropDownObj }
                             />
                         </div>
                         <div className="designation">
-                            <TextBox id="Designation" name="Designation" className="e-field"
-                                placeholder="Designation" labelMode="Always" variant={Variant.Outlined} />
+                            <TextBox
+                                id="Designation"
+                                name="Designation"
+                                className="e-field"
+                                placeholder="Designation"
+                                labelMode="Always"
+                                variant={Variant.Outlined}
+                                value={designation}
+                                onChange={(e: any) => setDesignation(e?.value ?? '')}
+                            />
                         </div>
                     </div>
 

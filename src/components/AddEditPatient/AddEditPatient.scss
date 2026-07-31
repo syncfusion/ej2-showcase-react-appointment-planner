@@ -104,3 +104,11 @@
         }
     }
 }
+// ...existing code...
+.field-error-msg, .sf-helper-text {
+    color: #d13438;        /* matches Syncfusion's sf-error red */
+    font-size: 12px;
+    line-height: 1.4;
+    margin-top: 4px;
+    padding-left: 2px;
+}

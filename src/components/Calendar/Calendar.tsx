@@ -1003,8 +1003,8 @@ const Calendar = () => {
                     <div className="schedule-container">
                         <Scheduler
                             ref={scheduleObj}
-                            height='800px'
-                            width='1000px'
+                            height='820px'
+                            width='100%'
                             className='doctor-appointment-planner'
                             showWeekend={false}
                             startHour={startHour}
@@ -1067,7 +1067,7 @@ const Calendar = () => {
                                 onChange={onDoctorSelect.bind(this)}
                                 itemTemplate={itemTemplate.bind(this)}
                                 footerTemplate={footerTemplate()}
-                                popupSettings={{ width: '250px' }}
+                                popupSettings={{ width: '250px', height: 'auto' }}
                                 className={"e-specialist-doctors" + (isDevice ? " e-specialist-hide" : "")}
                                 variant={Variant.Outlined}
                             />

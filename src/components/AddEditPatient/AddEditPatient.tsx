@@ -18,6 +18,14 @@ interface AddEditPatientProps {
     calendarComboBoxObj?: MutableRefObject<any>;
 }
 
+type FormErrors = {
+    Name?: string;
+    Mobile?: string;
+    Email?: string;
+    DOB?: string;
+    Symptoms?: string;
+};
+
 export const AddEditPatient = forwardRef(({ refreshEvent, calendarComboBoxObj }: AddEditPatientProps, ref) => {
     const dataService = useData();
     const dispatch = useDataDispatch();
@@ -34,6 +42,13 @@ export const AddEditPatient = forwardRef(({ refreshEvent, calendarComboBoxObj }:
     const [dobValue, setDobValue] = React.useState<Date>(new Date());
     const [bloodGroupValue, setBloodGroupValue] = React.useState<string>('');
 
+    // React-native validation state
+    const [name, setName] = React.useState('');
+    const [mobile, setMobile] = React.useState('');
+    const [email, setEmail] = React.useState('');
+    const [symptoms, setSymptoms] = React.useState('');
+    const [formErrors, setFormErrors] = React.useState<FormErrors>({});
+
     useImperativeHandle(ref, () => ({
         showDetails() {
             showDetails();
@@ -43,11 +58,60 @@ export const AddEditPatient = forwardRef(({ refreshEvent, calendarComboBoxObj }:
         }
     }));
 
+    const validateForm = (): boolean => {
+        const errors: FormErrors = {};
+
+        if (!name.trim()) {
+            errors.Name = 'Enter valid name';
+        }
+
+        // Mobile: must be 10 digits
+        const digitsOnly = mobile.replace(/\D/g, '');
+        if (digitsOnly.length === 0) {
+            errors.Mobile = 'Enter valid mobile number';
+        } else if (digitsOnly.length < 10) {
+            errors.Mobile = 'Mobile number must be 10 digits';
+        }
+
+        // Email: must match mail format
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email.trim()) {
+            errors.Email = 'Enter valid email';
+        } else if (!emailPattern.test(email.trim())) {
+            errors.Email = 'Email address is invalid';
+        }
+
+        if (!dobValue || isNaN(dobValue.getTime())) {
+            errors.DOB = 'Select valid DOB';
+        }
+
+        setFormErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
     React.useEffect(() => {
         if (isOpen && dialogState === 'edit') {
             setTimeout(() => {
                 activePatientData = dataService.activePatientData;
                 const obj: Record<string, any> = activePatientData;
+
+                // Pre-fill React state from active patient
+                if (obj) {
+                    setName(obj['Name'] || '');
+                    setEmail(obj['Email'] || '');
+                    setSymptoms(obj['Symptoms'] || '');
+                    if (obj['Mobile']) {
+                        setMobile(String(obj['Mobile']).replace(/[ -.*+?^${}()|[\]\\]/g, ''));
+                    }
+                    if (obj['DOB']) {
+                        setDobValue(obj['DOB'] instanceof Date ? obj['DOB'] : new Date(obj['DOB']));
+                    }
+                    if (obj['BloodGroup']) {
+                        setBloodGroupValue(obj['BloodGroup']);
+                    }
+                }
+
+                // Keep the imperative field-filling for non-React fields (legacy paths)
                 const formElement: HTMLElement[] = [].slice.call(
                     document.querySelectorAll('.new-patient-dialog .e-field')
                 );
@@ -62,57 +126,16 @@ export const AddEditPatient = forwardRef(({ refreshEvent, calendarComboBoxObj }:
                             if (columnName && obj[columnName] !== undefined && obj[columnName] !== null) {
                                 instance.value = obj[columnName];
                                 instance.dataBind();
-                                setTimeout(() => {
-                                    instance.value = obj[columnName];
-                                    instance.dataBind();
-                                }, 50);
-                            }
-                        }
-                    } else {
-                        const inputElement: HTMLInputElement = curElement.querySelector('input');
-                        if (inputElement) {
-                            const columnName: string = inputElement.name;
-                            if (!isNullOrUndefined(columnName)) {
-                                if (columnName === 'Gender') {
-                                    if (obj[columnName] === 'Male') {
-                                        inputElement.checked = true;
-                                    } else {
-                                        curElement.querySelectorAll('input')[1].checked = true;
-                                    }
-                                } else if (columnName === 'Mobile') {
-                                    const maskedInstance: any = (inputElement as any).ej2_instances?.[0];
-                                    if (maskedInstance && obj[columnName]) {
-                                        maskedInstance.value = obj[columnName].replace(/[ -.*+?^${}()|[\]\\]/g, '');
-                                    }
-                                } else {
-                                    inputElement.value = obj[columnName] || '';
-                                }
                             }
                         }
                     }
                 }
 
                 setTimeout(() => {
-                    const dobInstance = (document.getElementById('DOB') as any)?.ej2_instances?.[0];
-
-                    if (dobInstance && obj['DOB']) {
-                        dobInstance.value =
-                            obj['DOB'] instanceof Date
-                                ? obj['DOB']
-                                : new Date(obj['DOB']);
-
-                        dobInstance.dataBind();
-                    }
-
                     const bgInstance = (document.getElementById('BloodGroup') as any)?.ej2_instances?.[0];
-
                     if (bgInstance && obj['BloodGroup']) {
                         bgInstance.value = obj['BloodGroup'];
                         bgInstance.dataBind();
-                    }
-
-                    if (obj['BloodGroup']) {
-                        setBloodGroupValue(obj['BloodGroup']);
                     }
                 }, 100);
             }, 200);
@@ -132,50 +155,29 @@ export const AddEditPatient = forwardRef(({ refreshEvent, calendarComboBoxObj }:
     };
 
     const onSaveClick = (): void => {
-        const formElementContainer: HTMLElement = document.querySelector('.new-patient-dialog #new-patient-form');
-        if (formElementContainer && formElementContainer.classList.contains('e-formvalidator') &&
-            !((formElementContainer as EJ2Instance).ej2_instances[0] as FormValidator).validate()) {
+        // Run React-native validation
+        if (!validateForm()) {
             return;
         }
 
-        const obj: Record<string, any> = dialogState === 'new' ? {} : activePatientData;
-        const formElements: HTMLElement[] = [].slice.call(document.querySelectorAll('.new-patient-dialog .e-field'));
-
-        for (const curElement of formElements) {
-            const isDropElement: boolean = curElement.classList.contains('e-ddl');
-            obj['DOB'] = dobValue;
-
-            if (isDropElement) {
-                const instance: any = (curElement as EJ2Instance).ej2_instances?.[0];
-                if (instance) {
-                    const columnName: string = instance.name || instance.element?.name;
-                    if (columnName) {
-                        obj[columnName] = instance.value;
-                    }
-                }
-            }
-            else {
-                const inputElement: HTMLInputElement = curElement.querySelector('input');
-                if (inputElement) {
-                    const columnName: string = inputElement.name;
-                    if (!isNullOrUndefined(columnName)) {
-                        if (columnName === 'Gender') {
-                            obj[columnName] = inputElement.checked ? 'Male' : 'Female';
-                        } else {
-                            obj[columnName] = inputElement.value;
-                        }
-                    }
-                }
-            }
-        }
-
-        const dobInstance = (document.getElementById('DOB') as any)?.ej2_instances?.[0];
-        if (dobInstance) {
-            obj['DOB'] = dobInstance.value;
-        }
-
+        const obj: Record<string, any> = dialogState === 'new' ? {} : { ...activePatientData };
+        obj['Name'] = name.trim();
+        obj['Email'] = email.trim();
+        obj['Symptoms'] = symptoms.trim();
+        obj['Mobile'] = mobile.replace(/\D/g, '');
+        obj['DOB'] = dobValue;
         obj['BloodGroup'] = bloodGroupValue;
+        obj['Gender'] = (document.querySelector('input[name="Gender"]:checked') as HTMLInputElement)?.value || 'Male';
 
+        // Reset React state
+        setName('');
+        setEmail('');
+        setSymptoms('');
+        setMobile('');
+        setDobValue(new Date());
+        setFormErrors({});
+
+        // Reset EJ2 controls
         const dobElement: any = document.getElementById('DOB');
         const dobResetInstance = dobElement?.ej2_instances?.[0];
         if (dobResetInstance) {
@@ -189,6 +191,7 @@ export const AddEditPatient = forwardRef(({ refreshEvent, calendarComboBoxObj }:
             bgResetInstance.value = bgResetInstance.dataSource?.[0]?.Value || '';
             bgResetInstance.dataBind();
         }
+        setBloodGroupValue(bloodGroupData?.[0]?.Value || '');
 
         patientsData = dataService.patientsData;
 
@@ -240,7 +243,6 @@ export const AddEditPatient = forwardRef(({ refreshEvent, calendarComboBoxObj }:
             if (!inputElement) {
                 continue;
             }
-
             const columnName: string = (inputElement as HTMLInputElement).name;
             if (columnName === 'Gender') {
                 (inputElement as HTMLInputElement).checked = true;
@@ -254,22 +256,20 @@ export const AddEditPatient = forwardRef(({ refreshEvent, calendarComboBoxObj }:
             }
         }
 
+        setName('');
+        setEmail('');
+        setSymptoms('');
+        setMobile('');
+        setDobValue(new Date());
+        setBloodGroupValue(bloodGroupData?.[0]?.Value || '');
+        setFormErrors({});
+
         setTimeout(() => {
-            const dobInstance = (document.getElementById('DOB') as any)?.ej2_instances?.[0];
-
-            if (dobInstance) {
-                dobInstance.value = new Date();
-                dobInstance.dataBind();
-            }
-
             const bgInstance = (document.getElementById('BloodGroup') as any)?.ej2_instances?.[0];
-
             if (bgInstance) {
                 bgInstance.value = bloodGroupData?.[0]?.Value || '';
                 bgInstance.dataBind();
             }
-
-            setBloodGroupValue(bloodGroupData?.[0]?.Value || '');
         }, 100);
     };
 
@@ -278,27 +278,6 @@ export const AddEditPatient = forwardRef(({ refreshEvent, calendarComboBoxObj }:
         setDialogState('edit');
         setTitle('Edit Patient');
         setIsOpen(true);
-    };
-
-    const initFormValidator = (): void => {
-        const formElement: HTMLFormElement = document.querySelector('.new-patient-dialog #new-patient-form');
-        if (!formElement) {
-            return;
-        }
-
-        const customFn: (args: { [key: string]: HTMLElement }) => boolean = (e: { [key: string]: HTMLElement }) => {
-            const argsLength = ((e['element'] as any).ej2_instances[0] as MaskedTextBoxComponent).value.length;
-            return argsLength !== 0 ? argsLength >= 10 : false;
-        };
-
-        const rules: Record<string, any> = {
-            Name: { required: [true, 'Enter valid name'] },
-            DOB: { required: true, date: [true, 'Select valid DOB'] },
-            Mobile: { required: [customFn, 'Enter valid mobile number'] },
-            Email: { required: [true, 'Enter valid email'], email: [true, 'Email address is invalid'] }
-        };
-
-        renderFormValidator(formElement, rules, newPatientObj.current.element);
     };
 
     const footerTemplate = (): JSX.Element => {
@@ -328,9 +307,23 @@ export const AddEditPatient = forwardRef(({ refreshEvent, calendarComboBoxObj }:
                 footer={footerTemplate()}
                 onClose={() => setIsOpen(false)}
             >
-                <form id='new-patient-form'>
+                <form id='new-patient-form' noValidate>
                     <div className="field-container name-container">
-                        <TextBox id='Name' name='Name' className='patient-name e-field' placeholder='Patient Name' labelMode='Always' variant={Variant.Outlined}></TextBox>
+                        <TextBox
+                            id='Name'
+                            name='Name'
+                            className='patient-name e-field'
+                            placeholder='Patient Name'
+                            labelMode='Always'
+                            variant={Variant.Outlined}
+                            value={name}
+                            color={formErrors.Name ? Color.Error : undefined}
+                            helperText={formErrors.Name || ''}
+                            onChange={(e: any) => {
+                                setName(e?.value ?? '');
+                                if (formErrors.Name) setFormErrors({ ...formErrors, Name: undefined });
+                            }}
+                        />
                     </div>
                     <div className="field-container gender-container">
                         <div className="gender">
@@ -347,9 +340,10 @@ export const AddEditPatient = forwardRef(({ refreshEvent, calendarComboBoxObj }:
                                 id="DOB"
                                 className="e-field"
                                 value={dobValue}
-                                onChange={(args: DatePickerChangeEvent) =>
-                                    setDobValue(args.value as Date)
-                                }
+                                onChange={(args: DatePickerChangeEvent) => {
+                                    setDobValue(args.value as Date);
+                                    if (formErrors.DOB) setFormErrors({ ...formErrors, DOB: undefined });
+                                }}
                                 placeholder="DOB"
                                 labelMode="Always"
                                 clearButton={false}
@@ -377,21 +371,58 @@ export const AddEditPatient = forwardRef(({ refreshEvent, calendarComboBoxObj }:
                             />
                         </div>
                         <div className="mobile">
-                            <MaskedTextBoxComponent id='PatientMobile' name='Mobile' cssClass='e-field' width='180px' placeholder='Mobile Number'
-                                mask="(999) 999-9999" floatLabelType='Always'>
+                            <MaskedTextBoxComponent
+                                id='PatientMobile'
+                                name='Mobile'
+                                cssClass={`e-field ${formErrors.Mobile ? 'e-error' : ''}`}
+                                width='180px'
+                                placeholder='Mobile Number'
+                                mask="(999) 999-9999"
+                                floatLabelType='Always'
+                                value={mobile}
+                                change={(e: any) => {
+                                    const v = (e?.value || '').replace(/\D/g, '');
+                                    setMobile(v);
+                                    if (formErrors.Mobile) setFormErrors({ ...formErrors, Mobile: undefined });
+                                }}
+                            >
                             </MaskedTextBoxComponent>
+                            {formErrors.Mobile && (
+                                <div className="field-error-msg">{formErrors.Mobile}</div>
+                            )}
                         </div>
                     </div>
                     <div className="field-container email-container">
-                        <TextBox className='e-field' id='Email' name='Email' placeholder='Email' labelMode='Always' variant={Variant.Outlined}>
-                        </TextBox>
+                        <TextBox
+                            className='e-field'
+                            id='Email'
+                            name='Email'
+                            placeholder='Email'
+                            labelMode='Always'
+                            variant={Variant.Outlined}
+                            value={email}
+                            color={formErrors.Email ? Color.Error : undefined}
+                            helperText={formErrors.Email || ''}
+                            onChange={(e: any) => {
+                                setEmail(e?.value ?? '');
+                                if (formErrors.Email) setFormErrors({ ...formErrors, Email: undefined });
+                            }}
+                        />
                     </div>
                     <div className="field-container symptom-container">
-                        <TextBox className='e-field' id='Symptoms' name='Symptoms' placeholder='Symptoms' labelMode='Always' variant={Variant.Outlined}>
-                        </TextBox>
+                        <TextBox
+                            className='e-field'
+                            id='Symptoms'
+                            name='Symptoms'
+                            placeholder='Symptoms'
+                            labelMode='Always'
+                            variant={Variant.Outlined}
+                            value={symptoms}
+                            onChange={(e: any) => setSymptoms(e?.value ?? '')}
+                        />
                     </div>
                 </form>
-            </Dialog >
+            </Dialog>
         </div>
     );
 });

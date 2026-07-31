@@ -14,8 +14,11 @@
     .drag-sample-wrapper {
         display: flex;
         justify-content: space-between;
+        align-items: stretch;
 
         .schedule-container {
+            flex: 1 1 auto;
+            min-width: 0;
             padding-right: 25px;
 
             .e-schedule-toolbar-container {
@@ -464,6 +467,7 @@
         height: 40px;
         display: flex;
         justify-content: center;
+        align-items: center;
         cursor: pointer;
 
         .e-icon-add {
@@ -726,6 +730,8 @@
                         letter-spacing: 0.3px;
                         height: 17px;
                         padding: 2px 0;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
                     }
 
                     #waitcategory {
@@ -733,6 +739,8 @@
                         font-size: 10px;
                         color: #999999;
                         letter-spacing: 0.3px;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
                     }
                 }
 

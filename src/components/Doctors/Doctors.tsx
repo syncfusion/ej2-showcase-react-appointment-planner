@@ -121,7 +121,7 @@ export const Doctors = () => {
   ) => {
     if (element.classList.contains('availability')) {
       setTooltipText(
-        element.getAttribute('data-availability') || ''
+        capitalizeFirstLetter(element.getAttribute('data-availability') || '')
       );
 
       return element;
@@ -167,7 +167,7 @@ export const Doctors = () => {
               variant={Variant.Outlined}
               itemTemplate={itemTemplate}
               valueTemplate={valueTemplate}
-              style={{ width: '230px' }}
+              style={{ width: '245px' }}
             />
 
             <Button
@@ -264,3 +264,6 @@ export const Doctors = () => {
     </>
   );
 };
+
+const capitalizeFirstLetter = (str: string): string =>
+  str.charAt(0).toUpperCase() + str.slice(1);
