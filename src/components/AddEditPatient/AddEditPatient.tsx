@@ -6,11 +6,11 @@ import { Dialog } from '@syncfusion/react-popups';
 import { DropDownList } from '@syncfusion/react-dropdowns';
 import { EJ2Instance } from '@syncfusion/ej2-react-schedule';
 import { DatePicker, DatePickerChangeEvent } from '@syncfusion/react-calendars';
-import { FormValidator, MaskedTextBoxComponent } from '@syncfusion/ej2-react-inputs';
+import { MaskedTextBoxComponent } from '@syncfusion/ej2-react-inputs';
 import { TextBox } from '@syncfusion/react-inputs';
 import { useData, useDataDispatch } from '../../context/DataContext';
 import { useActivityDispatch } from '../../context/ActivityContext';
-import { renderFormValidator, destroyErrorElement } from '../../util';
+import { destroyErrorElement } from '../../util';
 import './AddEditPatient.scss';
 
 interface AddEditPatientProps {

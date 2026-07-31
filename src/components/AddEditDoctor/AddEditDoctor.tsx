@@ -2,9 +2,8 @@ import * as React from 'react';
 import { useRef, useEffect, forwardRef, useImperativeHandle, MutableRefObject, useState } from 'react';
 import { Color, isNullOrUndefined, Variant } from '@syncfusion/react-base';
 import { Button } from '@syncfusion/react-buttons';
-import { FormValidator, MaskedTextBoxComponent } from '@syncfusion/ej2-react-inputs';
+import { MaskedTextBoxComponent } from '@syncfusion/ej2-react-inputs';
 import { TextBox } from '@syncfusion/react-inputs';
-import { EJ2Instance } from '@syncfusion/ej2-react-schedule';
 import { Dialog } from '@syncfusion/react-popups';
 import { DropDownList } from '@syncfusion/react-dropdowns';
 import { specializationData as specializationList, experienceData as experienceList, dutyTimingsData as dutyTimingsList } from '../../datasource';
@@ -99,10 +98,6 @@ export const AddEditDoctor = forwardRef(({ refreshDoctors, calendarDropDownObj }
         return Object.keys(errors).length === 0;
     };
 
-    // Toggle the red border class on the EJ2 MaskedTextBox wrapper imperatively.
-    // We can't pass `className` as a dynamic template literal — the EJ2 wrapper
-    // splits the previous className and calls classList.remove('') which throws
-    // when the string contains an empty token.
     useEffect(() => {
         const instance: any = mobileRef.current;
         if (!instance || !instance.element) {
@@ -361,21 +356,21 @@ export const AddEditDoctor = forwardRef(({ refreshDoctors, calendarDropDownObj }
                         <div className="mobile">
                             <div><label>Mobile Number</label></div>
                             <MaskedTextBoxComponent
-    id="DoctorMobile"
-    name="Mobile"
-    className="e-field"
-    mask="(999) 999-9999"
-    floatLabelType="Always"
-    value={mobile}
-    ref={mobileRef as any}
-    change={(e: any) => {
-        setMobile(e?.value ?? '');
-        if (formErrors.Mobile) setFormErrors({ ...formErrors, Mobile: undefined });
-    }}
-/>
-{formErrors.Mobile && (
-    <div className="field-error-msg">{formErrors.Mobile}</div>
-)}
+                                id="DoctorMobile"
+                                name="Mobile"
+                                className="e-field"
+                                mask="(999) 999-9999"
+                                floatLabelType="Always"
+                                value={mobile}
+                                ref={mobileRef as any}
+                                change={(e: any) => {
+                                    setMobile(e?.value ?? '');
+                                    if (formErrors.Mobile) setFormErrors({ ...formErrors, Mobile: undefined });
+                                }}
+                            />
+                            {formErrors.Mobile && (
+                                <div className="field-error-msg">{formErrors.Mobile}</div>
+                            )}
                         </div>
                     </div>
 

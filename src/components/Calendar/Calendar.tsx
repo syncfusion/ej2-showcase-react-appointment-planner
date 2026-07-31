@@ -14,7 +14,7 @@ import {
 import { DropDownList } from '@syncfusion/react-dropdowns';
 import { Form, FormField, FormState, IFormValidator, TextArea, TextBox, ValidationRules, Variant as InputVariant } from "@syncfusion/react-inputs";
 import { DatePicker, DatePickerChangeEvent, TimePicker, TimePickerChangeEvent } from "@syncfusion/react-calendars";
-import { UserIcon, TimelineDayIcon, DescriptionIcon, CloseIcon, PlusIcon } from "@syncfusion/react-icons";
+import { CloseIcon, PlusIcon } from "@syncfusion/react-icons";
 import { AddEditDoctor } from '../AddEditDoctor/AddEditDoctor';
 import { AddEditPatient } from '../AddEditPatient/AddEditPatient';
 import { TreeWaitingList } from './TreeWaitingList/TreeWaitingList';
