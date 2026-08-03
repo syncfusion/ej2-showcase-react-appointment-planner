@@ -46,15 +46,7 @@ export const Dashboard = () => {
 
     const getDate = (date: Date): string => {
         const d: Date = new Date(date);
-        const tempHour: number =
-            d.getHours() === 0
-                ? 12
-                : d.getHours() < 10
-                    ? d.getHours()
-                    : d.getHours() > 12
-                        ? Math.abs(12 - d.getHours())
-                        : d.getHours();
-
+        const tempHour: number = d.getHours() === 0 ? 12 : d.getHours() < 10 ? d.getHours() : d.getHours() > 12 ? Math.abs(12 - d.getHours()) : d.getHours();
         const hour: string = tempHour < 10 ? '0' + tempHour : tempHour.toString();
         const minutes: string = d.getMinutes() < 10 ? '0' + d.getMinutes() : d.getMinutes().toString();
         const l: string = d.getHours() >= 12 ? 'PM' : 'AM';

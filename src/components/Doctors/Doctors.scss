@@ -42,8 +42,6 @@
 
             .specialization-ddl {
                 margin: 0 18px;
-
-                /* Fluent selected value wrapper fix */
                 .sf-input-value.sf-content {
                     display: flex !important;
                     align-items: center !important;
@@ -278,10 +276,6 @@
         text-overflow: ellipsis;
     }
 }
-
-/* ==========================================
-   TOOLTIP
-========================================== */
 
 .e-tooltip-wrap {
     border-radius: 15px 15px 15px 0;

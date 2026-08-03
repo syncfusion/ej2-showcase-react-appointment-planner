@@ -9,8 +9,6 @@
     "build": "webpack --mode production"
   },
   "devDependencies": {
-    "@syncfusion/react-tailwind-theme": "*",
-    "@syncfusion/react-bootstrap-theme": "*",
     "@syncfusion/ej2-react-buttons": "*",
     "@syncfusion/ej2-react-calendars": "*",
     "@syncfusion/ej2-react-charts": "*",
@@ -23,7 +21,9 @@
     "@syncfusion/ej2-react-popups": "*",
     "@syncfusion/ej2-react-schedule": "*",
     "@syncfusion/ej2-react-splitbuttons": "*",
+    "@syncfusion/react-bootstrap-theme": "*",
     "@syncfusion/react-scheduler": "*",
+    "@syncfusion/react-tailwind-theme": "*",
     "@types/node": "^20.4.1",
     "@types/react": "^18.2.14",
     "@types/react-dom": "^18.2.6",
@@ -46,6 +46,7 @@
   "dependencies": {
     "@syncfusion/react-charts": "^34.1.29",
     "@syncfusion/react-grid": "^34.1.30",
+    "@syncfusion/react-material-theme": "^34.1.30",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.14.1"

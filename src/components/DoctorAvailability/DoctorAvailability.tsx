@@ -63,7 +63,6 @@ export const DoctorAvailability = () => {
                 ref={availabilityObj}
                 id='listview_template'
                 style={{height:'88%', width:'100%'}}
-                className='e-list-template'
                 dataSource={dataSource}
                 itemTemplate={listTemplate.bind(this)}
                 fields={{ id: 'Id', text: 'Name' }}

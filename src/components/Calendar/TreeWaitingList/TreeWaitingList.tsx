@@ -38,7 +38,6 @@ export const TreeWaitingList = forwardRef(({ getCalendarData, setTreeItemDrop }:
 
     useEffect(() => {
         updateActiveWaitingList();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useImperativeHandle(ref, () => ({

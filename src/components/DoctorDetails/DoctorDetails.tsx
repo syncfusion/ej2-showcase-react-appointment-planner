@@ -262,7 +262,6 @@ export const DoctorDetails = () => {
     };
 
     const refreshDetails = (): void => {
-        // handled by context updates
     };
 
     const breakHoursFooter = (): JSX.Element => {

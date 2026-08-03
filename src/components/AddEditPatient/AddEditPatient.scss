@@ -8,8 +8,6 @@
             .field-container {
                 padding-bottom: 16px;
             }
-
-            /* Gender + DOB row */
             .gender-container,
             .contact-container {
                 display: flex;
@@ -29,11 +27,7 @@
                 display: flex;
                 flex-direction: column;
 
-                > div:first-child {
-                    margin-bottom: 8px;
-                }
-
-                > div:first-child label {
+                .gender-label {
                     font-weight: 600;
                     font-size: 12px;
                     color: #333;
@@ -57,7 +51,8 @@
                     color: #333;
                 }
                 .genderLabel{
-                    height: 16px;
+                    height: 24px;
+                    font-size: 12px;
                 }
             }
 
@@ -104,9 +99,8 @@
         }
     }
 }
-// ...existing code...
 .field-error-msg, .sf-helper-text {
-    color: #d13438;        /* matches Syncfusion's sf-error red */
+    color: #d13438;
     font-size: 12px;
     line-height: 1.4;
     margin-top: 4px;

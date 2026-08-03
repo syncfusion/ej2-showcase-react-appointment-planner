@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useRef, useEffect, useCallback, memo, useState, useMemo, RefObject } from 'react';
 import {
-    closest, Browser, extend, isNullOrUndefined
+    closest, Browser, extend, isNullOrUndefined, L10n
 } from '@syncfusion/react-base';
 import { Internationalization } from '@syncfusion/ej2-base';
 import { Query } from '@syncfusion/react-data';
@@ -24,6 +24,15 @@ import { CalendarData } from '../../models/calendar-data';
 import { useData } from '../../context/DataContext';
 import { updateActiveItem, loadImage, getString } from '../../util';
 import './Calendar.scss';
+
+L10n.load({
+    'en-US': {
+        schedule: {
+            newEvent: 'Add Appointment',
+            editEvent: 'Edit Appointment'
+        }
+    }
+});
 
 interface AppointmentData {
     PatientId: number;
@@ -679,7 +688,6 @@ const Calendar = () => {
                         onFormStateChange={setFormState}
                         initialValues={initialFormValues}
                     >
-                        {/* Patient Name Field */}
                         <div style={{ marginBottom: '15px' }}>
                             <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>PATIENT NAME</label>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -710,8 +718,6 @@ const Calendar = () => {
                                 />
                             </div>
                         </div>
-
-                        {/* Title and Location in one row */}
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
                             <div>
                                 <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Title</label>
@@ -732,8 +738,6 @@ const Calendar = () => {
                                 />
                             </div>
                         </div>
-
-                        {/* Start Date and Start Time */}
                         <div style={{
                             display: 'grid',
                             gridTemplateColumns: allDay ? '1fr' : '1fr 1fr',
@@ -782,8 +786,6 @@ const Calendar = () => {
                                 </div>
                             )}
                         </div>
-
-                        {/* End Date and End Time */}
                         <div style={{
                             display: 'grid',
                             gridTemplateColumns: allDay ? '1fr' : '1fr 1fr',
@@ -832,8 +834,6 @@ const Calendar = () => {
                                 </div>
                             )}
                         </div>
-
-                        {/* All day Checkbox and Timezone Checkbox */}
                         <div style={{ display: 'flex', gap: '30px', marginBottom: '15px' }}>
                             <div>
                                 <input
@@ -854,8 +854,6 @@ const Calendar = () => {
                                 <label htmlFor="timezone" style={{ marginLeft: '8px' }}>Timezone</label>
                             </div>
                         </div>
-
-                        {/* Timezone Fields - Only shown when timezone checkbox is checked */}
                         {timezone && (
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
                                 <div>
@@ -880,8 +878,6 @@ const Calendar = () => {
                                 </div>
                             </div>
                         )}
-
-                        {/* Repeat Dropdown */}
                         <div style={{ marginBottom: '15px' }}>
                             <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Repeat</label>
                             <DropDownList
@@ -926,7 +922,6 @@ const Calendar = () => {
                                 />
                             </FormField>
                         </div>
-                        {/* Symptom/Notes Field */}
                         <div style={{ marginBottom: '15px' }}>
                             <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Symptom</label>
                             <FormField name="symptoms">

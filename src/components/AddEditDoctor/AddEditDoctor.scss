@@ -34,19 +34,16 @@
             flex: 1;
             min-width: 0;
         }
-
-        /* Gender block */
         .gender {
             display: flex;
             flex-direction: column;
+
+            .gender-label {
+                height: 10px;
+            }
         }
 
-        .gender > div:first-child {
-            margin-bottom: 8px;
-        }
-
-        .gender > div:first-child label,
-        .mobile > div:first-child label {
+        .gender .gender-label {
             font-weight: 600;
             font-size: 12px;
             color: #333;
@@ -57,13 +54,9 @@
             flex-direction: column;
         }
 
-        .mobile > div:first-child {
-            margin-bottom: 8px;
-        }
-
         .e-btn-group {
             width: 100%;
-            height: 38px;
+            height: 35px;
             display: flex;
         }
 
@@ -78,8 +71,6 @@
             box-shadow: inset 0 3px 5px rgba(0, 0, 0, .12);
             color: #333;
         }
-
-        /* Full width controls */
         .sf-input-group,
         .sf-dropdown,
         .sf-ddl,

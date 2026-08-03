@@ -41,8 +41,6 @@ export const AddEditPatient = forwardRef(({ refreshEvent, calendarComboBoxObj }:
     const dialogTarget = document.getElementById('content-area') as HTMLElement | null;
     const [dobValue, setDobValue] = React.useState<Date>(new Date());
     const [bloodGroupValue, setBloodGroupValue] = React.useState<string>('');
-
-    // React-native validation state
     const [name, setName] = React.useState('');
     const [mobile, setMobile] = React.useState('');
     const [email, setEmail] = React.useState('');
@@ -64,16 +62,12 @@ export const AddEditPatient = forwardRef(({ refreshEvent, calendarComboBoxObj }:
         if (!name.trim()) {
             errors.Name = 'Enter valid name';
         }
-
-        // Mobile: must be 10 digits
         const digitsOnly = mobile.replace(/\D/g, '');
         if (digitsOnly.length === 0) {
             errors.Mobile = 'Enter valid mobile number';
         } else if (digitsOnly.length < 10) {
             errors.Mobile = 'Mobile number must be 10 digits';
         }
-
-        // Email: must match mail format
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!email.trim()) {
             errors.Email = 'Enter valid email';
@@ -94,8 +88,6 @@ export const AddEditPatient = forwardRef(({ refreshEvent, calendarComboBoxObj }:
             setTimeout(() => {
                 activePatientData = dataService.activePatientData;
                 const obj: Record<string, any> = activePatientData;
-
-                // Pre-fill React state from active patient
                 if (obj) {
                     setName(obj['Name'] || '');
                     setEmail(obj['Email'] || '');
@@ -110,8 +102,6 @@ export const AddEditPatient = forwardRef(({ refreshEvent, calendarComboBoxObj }:
                         setBloodGroupValue(obj['BloodGroup']);
                     }
                 }
-
-                // Keep the imperative field-filling for non-React fields (legacy paths)
                 const formElement: HTMLElement[] = [].slice.call(
                     document.querySelectorAll('.new-patient-dialog .e-field')
                 );
@@ -155,7 +145,6 @@ export const AddEditPatient = forwardRef(({ refreshEvent, calendarComboBoxObj }:
     };
 
     const onSaveClick = (): void => {
-        // Run React-native validation
         if (!validateForm()) {
             return;
         }
@@ -168,16 +157,12 @@ export const AddEditPatient = forwardRef(({ refreshEvent, calendarComboBoxObj }:
         obj['DOB'] = dobValue;
         obj['BloodGroup'] = bloodGroupValue;
         obj['Gender'] = (document.querySelector('input[name="Gender"]:checked') as HTMLInputElement)?.value || 'Male';
-
-        // Reset React state
         setName('');
         setEmail('');
         setSymptoms('');
         setMobile('');
         setDobValue(new Date());
         setFormErrors({});
-
-        // Reset EJ2 controls
         const dobElement: any = document.getElementById('DOB');
         const dobResetInstance = dobElement?.ej2_instances?.[0];
         if (dobResetInstance) {
@@ -210,7 +195,6 @@ export const AddEditPatient = forwardRef(({ refreshEvent, calendarComboBoxObj }:
             });
             dispatch({ type: 'SET_ACTIVE_PATIENT', data: activePatientData });
         }
-
         const activityObj: Record<string, any> = {
             Name: dialogState === 'new' ? 'Added New Patient' : 'Updated Patient',
             Message: `${obj['Name']} for ${obj['Symptoms']}`,
@@ -218,19 +202,15 @@ export const AddEditPatient = forwardRef(({ refreshEvent, calendarComboBoxObj }:
             Type: 'patient',
             ActivityTime: new Date()
         };
-
         activityDispatch({ type: 'SET_ACTIVITY_DATA', data: activityObj });
         dispatch({ type: 'SET_PATIENTS_DATA', data: patientsData });
-
         if (refreshEvent) {
             refreshEvent();
         }
-
         if (!isNullOrUndefined(calendarComboBoxObj) && !isNullOrUndefined(calendarComboBoxObj.current)) {
             calendarComboBoxObj.current.dataSource = [];
             calendarComboBoxObj.current.dataSource = patientsData;
         }
-
         setIsOpen(false);
     };
 
@@ -317,7 +297,6 @@ export const AddEditPatient = forwardRef(({ refreshEvent, calendarComboBoxObj }:
                             labelMode='Always'
                             variant={Variant.Outlined}
                             value={name}
-                            color={formErrors.Name ? Color.Error : undefined}
                             helperText={formErrors.Name || ''}
                             onChange={(e: any) => {
                                 setName(e?.value ?? '');
@@ -401,7 +380,6 @@ export const AddEditPatient = forwardRef(({ refreshEvent, calendarComboBoxObj }:
                             labelMode='Always'
                             variant={Variant.Outlined}
                             value={email}
-                            color={formErrors.Email ? Color.Error : undefined}
                             helperText={formErrors.Email || ''}
                             onChange={(e: any) => {
                                 setEmail(e?.value ?? '');
