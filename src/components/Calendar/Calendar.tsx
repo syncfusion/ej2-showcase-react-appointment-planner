@@ -4,7 +4,6 @@ import {
     closest, Browser, extend, isNullOrUndefined, L10n
 } from '@syncfusion/react-base';
 import { Internationalization } from '@syncfusion/ej2-base';
-import { Query } from '@syncfusion/react-data';
 import { IToast, Toast } from '@syncfusion/react-notifications';
 import { Button, Color, Variant } from '@syncfusion/react-buttons';
 import { Dialog, IDialog } from '@syncfusion/react-popups';
