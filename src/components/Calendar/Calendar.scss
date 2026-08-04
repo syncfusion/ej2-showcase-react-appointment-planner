@@ -388,36 +388,6 @@
     }
 }
 
-.e-schedule-dialog {
-    .e-dlg-content {
-        .custom-field-row {
-            padding-bottom: 12px;
-
-            .custom-field-container {
-                display: grid;
-                grid-template-columns: 12fr 1fr;
-
-                .e-btn {
-                    margin-top: 27px;
-                    margin-left: 9px;
-                }
-            }
-        }
-
-        .e-add-icon::before {
-            content: '\e95c';
-        }
-    }
-
-    &.e-device {
-        .e-dlg-content {
-            .custom-field-row {
-                padding-bottom: 0;
-            }
-        }
-    }
-}
-
 .e-specialist-doctors {
     .specialist-item {
         height: 40px;
