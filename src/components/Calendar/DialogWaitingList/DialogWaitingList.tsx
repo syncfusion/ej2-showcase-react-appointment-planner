@@ -5,7 +5,7 @@ import { DialogComponent } from '@syncfusion/ej2-react-popups';
 import { ChangeEventArgs } from '@syncfusion/ej2-react-inputs';
 import { ButtonComponent, CheckBox, CheckBoxComponent } from '@syncfusion/ej2-react-buttons';
 import { EJ2Instance } from '@syncfusion/ej2-react-schedule';
-import { ToastComponent } from '@syncfusion/ej2-react-notifications';
+import { IToast } from '@syncfusion/react-notifications';
 import { CalendarData } from '../../../models/calendar-data';
 import { useData, useDataDispatch } from '../../../context/DataContext';
 import { useWaitingList, useWaitingListDispatch } from '../../../context/WaitingListContext';
@@ -60,9 +60,8 @@ export const DialogWaitingList = forwardRef(({ getCalendarData, updateEventData 
             refreshWaitingItems();
             waitingObj.current.hide();
         } else {
-            const toastObj: ToastComponent = getCalendarData().toastObj;
-            toastObj.content = 'Please select the waiting item to delete';
-            toastObj.show();
+            const toastObj: IToast = getCalendarData().toastObj;
+            toastObj.show('Please select the waiting item to delete');
         }
     }
 
@@ -92,10 +91,9 @@ export const DialogWaitingList = forwardRef(({ getCalendarData, updateEventData 
             waitingObj.current.hide();
             updateEventData(eventData);
             calendarData.scheduleObj.eventSettings.dataSource = eventData;
-            calendarData.scheduleObj.refreshEvents();
+            // refreshEvents() removed; data-source mutation re-renders reactively.
         } else {
-            calendarData.toastObj.content = 'Please select the waiting item to add';
-            calendarData.toastObj.show();
+            calendarData.toastObj.show('Please select the waiting item to add');
         }
     }
 

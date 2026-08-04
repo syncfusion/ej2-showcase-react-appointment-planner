@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useRef, useEffect, useState, memo, useCallback } from 'react';
 import { Internationalization } from '@syncfusion/ej2-base';
 import { DataManager, Query, ReturnOption } from '@syncfusion/react-data';
-import { Dialog } from '@syncfusion/react-popups';
+import { Dialog, IDialog } from '@syncfusion/react-popups';
 import { Button, Color, Variant } from '@syncfusion/react-buttons';
 import {
   Grid,
@@ -41,9 +41,8 @@ const Patients = () => {
   const dispatch = useDataDispatch();
   const gridObj = useRef<GridRef>(null);
   const addEditPatientObj = useRef<any>(null);
-  const deleteConfirmationDialogObj = useRef<any>(null);
-  const patientDetailsDialogObj = useRef<any>(null);
-  const calendarComboBoxObj = useRef<any>(null);
+  const deleteConfirmationDialogObj = useRef<IDialog>(null);
+  const patientDetailsDialogObj = useRef<IDialog>(null);
 
   let patientsData: PatientData[] = dataService.patientsData;
   const [filteredPatients, setFilteredPatients] = useState<PatientData[]>(dataService.patientsData);

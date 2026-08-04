@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ListView } from '@syncfusion/react-lists';
+import { IListView, ListView } from '@syncfusion/react-lists';
 import { Tooltip, TooltipEventArgs } from '@syncfusion/ej2-react-popups';
 import { useData } from '../../context/DataContext';
 import { loadImage } from '../../util';
@@ -9,7 +9,7 @@ import './DoctorAvailability.scss';
 
 export const DoctorAvailability = () => {
     const dataService = useData();
-    const availabilityObj = useRef<any>(null);
+    const availabilityObj = useRef<IListView>(null);
     let dataSource: Record<string, any>[] = dataService.doctorsData;
     let specializationData: Record<string, any>[] = dataService.specialistData;
     let tooltipObj: Tooltip;

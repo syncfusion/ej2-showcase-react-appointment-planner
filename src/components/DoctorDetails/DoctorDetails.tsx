@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Internationalization, extend } from '@syncfusion/ej2-base';
 import { Button, Color, Size, Variant } from '@syncfusion/react-buttons';
-import { Dialog } from '@syncfusion/react-popups';
+import { Dialog, IDialog } from '@syncfusion/react-popups';
 import { TimePicker } from '@syncfusion/react-calendars';
 import { AddEditDoctor } from '../AddEditDoctor/AddEditDoctor';
 import { useData, useDataDispatch } from '../../context/DataContext';
@@ -26,8 +26,8 @@ export const DoctorDetails = () => {
     const dataService = useData();
     const dispatch = useDataDispatch();
     const addEditDoctorObj = useRef<any>(null);
-    const breakHourObj = useRef<any>(null);
-    const deleteConfirmationDialogObj = useRef<any>(null);
+    const breakHourObj = useRef<IDialog>(null);
+    const deleteConfirmationDialogObj = useRef<IDialog>(null);
     const navigate = useNavigate();
 
     if (!dataService || !dispatch) {

@@ -4,8 +4,8 @@ import { Color, isNullOrUndefined, Variant } from '@syncfusion/react-base';
 import { Button } from '@syncfusion/react-buttons';
 import { MaskedTextBoxComponent } from '@syncfusion/ej2-react-inputs';
 import { TextBox } from '@syncfusion/react-inputs';
-import { Dialog } from '@syncfusion/react-popups';
-import { DropDownList } from '@syncfusion/react-dropdowns';
+import { Dialog, IDialog } from '@syncfusion/react-popups';
+import { DropDownList, IDropDownList } from '@syncfusion/react-dropdowns';
 import { specializationData as specializationList, experienceData as experienceList, dutyTimingsData as dutyTimingsList } from '../../datasource';
 import { useData, useDataDispatch } from '../../context/DataContext';
 import { useActivityDispatch } from '../../context/ActivityContext';
@@ -13,7 +13,7 @@ import './AddEditDoctor.scss';
 
 interface AddEditDoctorProps {
     refreshDoctors?: () => void;
-    calendarDropDownObj?: MutableRefObject<any>;
+    calendarDropDownObj?: MutableRefObject<IDropDownList>;
 }
 
 type FormErrors = {
@@ -27,7 +27,7 @@ export const AddEditDoctor = forwardRef(({ refreshDoctors, calendarDropDownObj }
     const dataService = useData();
     const dispatch = useDataDispatch();
     const activityDispatch = useActivityDispatch();
-    const newDoctorObj = useRef<any>(null);
+    const newDoctorObj = useRef<IDialog>(null);
     const mobileRef = useRef<MaskedTextBoxComponent | null>(null);
     const specializationData: Record<string, any>[] = specializationList;
     const experienceData: Record<string, any>[] = experienceList;
@@ -87,19 +87,6 @@ export const AddEditDoctor = forwardRef(({ refreshDoctors, calendarDropDownObj }
         setFormErrors(errors);
         return Object.keys(errors).length === 0;
     };
-
-    useEffect(() => {
-        const instance: any = mobileRef.current;
-        if (!instance || !instance.element) {
-            return;
-        }
-        const wrapper: HTMLElement = instance.element.closest('.e-input-group') || instance.element;
-        if (formErrors.Mobile) {
-            wrapper.classList.add('e-error');
-        } else {
-            wrapper.classList.remove('e-error');
-        }
-    }, [formErrors.Mobile]);
     useEffect(() => {
         if (!isOpen) {
             return;
@@ -122,28 +109,26 @@ export const AddEditDoctor = forwardRef(({ refreshDoctors, calendarDropDownObj }
             setEmail(obj['Email'] || '');
             setEducation(obj['Education'] || '');
             setDesignation(obj['Designation'] || '');
-            setTimeout(() => {
-                const formElements: HTMLElement[] = [].slice.call(
-                    document.querySelectorAll('.new-doctor-dialog .e-field')
-                );
-                for (const curElement of formElements) {
-                    if (curElement.classList.contains('e-ddl')) {
-                        continue;
-                    }
-                    const inputElement: HTMLInputElement = curElement.querySelector('input');
-                    if (!inputElement) {
-                        continue;
-                    }
-                    const columnName: string = inputElement.name;
-                    if (columnName === 'Gender') {
-                        if (obj[columnName] === 'Female') {
-                            (curElement.querySelectorAll('input')[1] as HTMLInputElement).checked = true;
-                        } else {
-                            inputElement.checked = true;
-                        }
+            const formElements: HTMLElement[] = [].slice.call(
+                document.querySelectorAll('.new-doctor-dialog .e-field')
+            );
+            for (const curElement of formElements) {
+                if (curElement.classList.contains('e-ddl')) {
+                    continue;
+                }
+                const inputElement: HTMLInputElement = curElement.querySelector('input');
+                if (!inputElement) {
+                    continue;
+                }
+                const columnName: string = inputElement.name;
+                if (columnName === 'Gender') {
+                    if (obj[columnName] === 'Female') {
+                        (curElement.querySelectorAll('input')[1] as HTMLInputElement).checked = true;
+                    } else {
+                        inputElement.checked = true;
                     }
                 }
-            }, 150);
+            }
         } else {
             setSpecialization(specializationData[0].Id);
             setExperience(experienceData[0].Id);
@@ -154,21 +139,18 @@ export const AddEditDoctor = forwardRef(({ refreshDoctors, calendarDropDownObj }
             setEducation('');
             setDesignation('');
             setFormErrors({});
-
-            setTimeout(() => {
-                const formElements: HTMLElement[] = [].slice.call(
-                    document.querySelectorAll('.new-doctor-dialog .e-field')
-                );
-                for (const curElement of formElements) {
-                    if (curElement.classList.contains('e-ddl')) {
-                        continue;
-                    }
-                    const inputElement: HTMLInputElement = curElement.querySelector('input');
-                    if (inputElement && inputElement.name === 'Gender') {
-                        inputElement.checked = true;
-                    }
+            const formElements: HTMLElement[] = [].slice.call(
+                document.querySelectorAll('.new-doctor-dialog .e-field')
+            );
+            for (const curElement of formElements) {
+                if (curElement.classList.contains('e-ddl')) {
+                    continue;
                 }
-            }, 150);
+                const inputElement: HTMLInputElement = curElement.querySelector('input');
+                if (inputElement && inputElement.name === 'Gender') {
+                    inputElement.checked = true;
+                }
+            }
         }
     }, [isOpen, dialogState, dataService.activeDoctorData]);
 

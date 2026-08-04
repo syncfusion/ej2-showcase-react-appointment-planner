@@ -1,9 +1,9 @@
-import { ScheduleComponent } from "@syncfusion/ej2-react-schedule";
-import { ToastComponent } from "@syncfusion/ej2-react-notifications";
+import { IScheduler } from "@syncfusion/react-scheduler";
+import { IToast } from "@syncfusion/react-notifications";
 
 export class CalendarData {
-    scheduleObj: ScheduleComponent;
-    toastObj: ToastComponent;
+    scheduleObj: IScheduler;
+    toastObj: IToast;
     treeObj: Record<string, any>;
     currentDate: Date;
     activeDoctorData: Record<string, any>[];

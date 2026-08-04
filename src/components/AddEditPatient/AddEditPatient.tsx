@@ -3,7 +3,7 @@ import { useRef, forwardRef, useImperativeHandle, MutableRefObject } from 'react
 import { Color, isNullOrUndefined, Variant } from '@syncfusion/react-base';
 import { Button } from '@syncfusion/react-buttons';
 import { Dialog } from '@syncfusion/react-popups';
-import { DropDownList } from '@syncfusion/react-dropdowns';
+import { DropDownList, IComboBox } from '@syncfusion/react-dropdowns';
 import { EJ2Instance } from '@syncfusion/ej2-react-schedule';
 import { DatePicker, DatePickerChangeEvent } from '@syncfusion/react-calendars';
 import { MaskedTextBoxComponent } from '@syncfusion/ej2-react-inputs';
@@ -15,7 +15,7 @@ import './AddEditPatient.scss';
 
 interface AddEditPatientProps {
     refreshEvent?: () => void;
-    calendarComboBoxObj?: MutableRefObject<any>;
+    calendarComboBoxObj?: MutableRefObject<IComboBox>;
 }
 
 type FormErrors = {
@@ -85,50 +85,46 @@ export const AddEditPatient = forwardRef(({ refreshEvent, calendarComboBoxObj }:
 
     React.useEffect(() => {
         if (isOpen && dialogState === 'edit') {
-            setTimeout(() => {
-                activePatientData = dataService.activePatientData;
-                const obj: Record<string, any> = activePatientData;
-                if (obj) {
-                    setName(obj['Name'] || '');
-                    setEmail(obj['Email'] || '');
-                    setSymptoms(obj['Symptoms'] || '');
-                    if (obj['Mobile']) {
-                        setMobile(String(obj['Mobile']).replace(/[ -.*+?^${}()|[\]\\]/g, ''));
-                    }
-                    if (obj['DOB']) {
-                        setDobValue(obj['DOB'] instanceof Date ? obj['DOB'] : new Date(obj['DOB']));
-                    }
-                    if (obj['BloodGroup']) {
-                        setBloodGroupValue(obj['BloodGroup']);
-                    }
+            activePatientData = dataService.activePatientData;
+            const obj: Record<string, any> = activePatientData;
+            if (obj) {
+                setName(obj['Name'] || '');
+                setEmail(obj['Email'] || '');
+                setSymptoms(obj['Symptoms'] || '');
+                if (obj['Mobile']) {
+                    setMobile(String(obj['Mobile']).replace(/[ -.*+?^${}()|[\]\\]/g, ''));
                 }
-                const formElement: HTMLElement[] = [].slice.call(
-                    document.querySelectorAll('.new-patient-dialog .e-field')
-                );
+                if (obj['DOB']) {
+                    setDobValue(obj['DOB'] instanceof Date ? obj['DOB'] : new Date(obj['DOB']));
+                }
+                if (obj['BloodGroup']) {
+                    setBloodGroupValue(obj['BloodGroup']);
+                }
+            }
+            const formElement: HTMLElement[] = [].slice.call(
+                document.querySelectorAll('.new-patient-dialog .e-field')
+            );
 
-                for (const curElement of formElement) {
-                    const isCustomElement: boolean = curElement.classList.contains('e-ddl');
+            for (const curElement of formElement) {
+                const isCustomElement: boolean = curElement.classList.contains('e-ddl');
 
-                    if (isCustomElement) {
-                        const instance: any = (curElement as EJ2Instance).ej2_instances?.[0];
-                        if (instance) {
-                            const columnName: string = instance.name || instance.element?.name;
-                            if (columnName && obj[columnName] !== undefined && obj[columnName] !== null) {
-                                instance.value = obj[columnName];
-                                instance.dataBind();
-                            }
+                if (isCustomElement) {
+                    const instance: any = (curElement as EJ2Instance).ej2_instances?.[0];
+                    if (instance) {
+                        const columnName: string = instance.name || instance.element?.name;
+                        if (columnName && obj[columnName] !== undefined && obj[columnName] !== null) {
+                            instance.value = obj[columnName];
+                            instance.dataBind();
                         }
                     }
                 }
+            }
 
-                setTimeout(() => {
-                    const bgInstance = (document.getElementById('BloodGroup') as any)?.ej2_instances?.[0];
-                    if (bgInstance && obj['BloodGroup']) {
-                        bgInstance.value = obj['BloodGroup'];
-                        bgInstance.dataBind();
-                    }
-                }, 100);
-            }, 200);
+            const bgInstance = (document.getElementById('BloodGroup') as any)?.ej2_instances?.[0];
+            if (bgInstance && obj['BloodGroup']) {
+                bgInstance.value = obj['BloodGroup'];
+                bgInstance.dataBind();
+            }
         } else if (isOpen && dialogState === 'new') {
             resetFormFields();
         }
@@ -243,14 +239,11 @@ export const AddEditPatient = forwardRef(({ refreshEvent, calendarComboBoxObj }:
         setDobValue(new Date());
         setBloodGroupValue(bloodGroupData?.[0]?.Value || '');
         setFormErrors({});
-
-        setTimeout(() => {
-            const bgInstance = (document.getElementById('BloodGroup') as any)?.ej2_instances?.[0];
-            if (bgInstance) {
-                bgInstance.value = bloodGroupData?.[0]?.Value || '';
-                bgInstance.dataBind();
-            }
-        }, 100);
+        const bgInstance = (document.getElementById('BloodGroup') as any)?.ej2_instances?.[0];
+        if (bgInstance) {
+            bgInstance.value = bloodGroupData?.[0]?.Value || '';
+            bgInstance.dataBind();
+        }
     };
 
     const showDetails = (): void => {
@@ -292,7 +285,7 @@ export const AddEditPatient = forwardRef(({ refreshEvent, calendarComboBoxObj }:
                         <TextBox
                             id='Name'
                             name='Name'
-                            className='patient-name e-field'
+                            className='patient-name e-field '
                             placeholder='Patient Name'
                             labelMode='Always'
                             variant={Variant.Outlined}
@@ -353,15 +346,15 @@ export const AddEditPatient = forwardRef(({ refreshEvent, calendarComboBoxObj }:
                             <MaskedTextBoxComponent
                                 id='PatientMobile'
                                 name='Mobile'
-                                cssClass={`e-field ${formErrors.Mobile ? 'e-error' : ''}`}
+                                cssClass={`e-field`}
                                 width='180px'
                                 placeholder='Mobile Number'
                                 mask="(999) 999-9999"
                                 floatLabelType='Always'
                                 value={mobile}
                                 change={(e: any) => {
-                                    const v = (e?.value || '').replace(/\D/g, '');
-                                    setMobile(v);
+                                    const value = (e?.value || '').replace(/\D/g, '');
+                                    setMobile(value);
                                     if (formErrors.Mobile) setFormErrors({ ...formErrors, Mobile: undefined });
                                 }}
                             >

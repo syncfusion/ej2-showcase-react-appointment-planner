@@ -5,13 +5,14 @@ import {
 } from '@syncfusion/react-base';
 import { Internationalization } from '@syncfusion/ej2-base';
 import { Query } from '@syncfusion/react-data';
-import { Toast } from '@syncfusion/react-notifications';
+import { IToast, Toast } from '@syncfusion/react-notifications';
 import { Button, Color, Variant } from '@syncfusion/react-buttons';
-import { Dialog } from '@syncfusion/react-popups';
+import { Dialog, IDialog } from '@syncfusion/react-popups';
 import {
-    Scheduler, DayView, WeekView, WorkWeekView, MonthView, SchedulerEditorPopup, SchedulerEditorProps, SchedulerEditorSubmitEvent, TimezoneFields
+    Scheduler, DayView, WeekView, WorkWeekView, MonthView, SchedulerEditorPopup, SchedulerEditorProps, SchedulerEditorSubmitEvent, TimezoneFields,
+    IScheduler, EventModel, SchedulerCellDetails
 } from '@syncfusion/react-scheduler';
-import { DropDownList } from '@syncfusion/react-dropdowns';
+import { DropDownList, IComboBox, IDropDownList } from '@syncfusion/react-dropdowns';
 import { Form, FormField, FormState, IFormValidator, TextArea, TextBox, ValidationRules, Variant as InputVariant } from "@syncfusion/react-inputs";
 import { DatePicker, DatePickerChangeEvent, TimePicker, TimePickerChangeEvent } from "@syncfusion/react-calendars";
 import { CloseIcon, PlusIcon } from "@syncfusion/react-icons";
@@ -46,10 +47,10 @@ const Calendar = () => {
     const dataService = useData();
     const addEditDoctorObj = useRef(null);
     const addEditPatientObj = useRef(null);
-    const scheduleObj = useRef<any>(null);
-    const specialistObj = useRef<any>(null);
-    const dropdownObj = useRef<any>(null);
-    const toastObj = useRef<any>(null);
+    const scheduleObj = useRef<IScheduler>(null);
+    const specialistObj = useRef<IDialog>(null);
+    const dropdownObj = useRef<IDropDownList>(null);
+    const toastObj = useRef<IToast>(null);
     const treeObj = useRef(null);
     const waitingObj = useRef(null);
     const [isOpen, setIsOpen] = useState(false);
@@ -65,13 +66,10 @@ const Calendar = () => {
     const isDevice: boolean = Browser.isDevice;
     const position: Record<string, any> = { X: 'Right', Y: 'Bottom' };
     const isTreeItemDropped = useRef(false);
-    const patientValue = useRef(null);
-    const group = { resources: ['Departments', 'Doctors'] };
     const instance: Internationalization = new Internationalization();
     const [workDays, setWorkDays] = useState([0, 1, 2, 3, 4, 5, 6]);
     const [workHours, setWorkHours] = useState({ start: '08:00', end: '21:00' });
-    const animationSettings: Record<string, any> = { effect: 'None' };
-    const comboBox = useRef<any>(null);
+    const comboBox = useRef<IComboBox>(null);
     const fields: Record<string, any> = { text: 'Name', value: 'Id' };
     const eventData = useRef(dataService.hospitalData);
     const hospitalData = useRef(dataService.hospitalData);
@@ -225,18 +223,19 @@ const Calendar = () => {
     };
 
     const createNewEvent = (e: MouseEvent): void => {
-        const args = e as Record<string, any> & MouseEvent;
-        let data: Record<string, any>;
+        let data: SchedulerCellDetails | EventModel;
+        const targetCell: HTMLElement = (e.currentTarget as HTMLElement) ?? scheduleObj.current.element;
+        const cellDetails: SchedulerCellDetails | null = scheduleObj.current.getCellDetails(targetCell);
         const isSameTime: boolean =
-            scheduleObj.current.activeCellsData.startTime.getTime() ===
-            scheduleObj.current.activeCellsData.endTime.getTime();
-        if (scheduleObj.current.activeCellsData && !isSameTime) {
-            data = scheduleObj.current.activeCellsData;
+            cellDetails != null &&
+            cellDetails.startTime.getTime() === cellDetails.endTime.getTime();
+        if (cellDetails && !isSameTime) {
+            data = cellDetails;
         } else {
-            const interval: number = scheduleObj.current.activeViewOptions.timeScale.interval;
-            const slotCount: number = scheduleObj.current.activeViewOptions.timeScale.slotCount;
+            const interval: number = 30;
+            const slotCount: number = 2;
             const msInterval: number = (interval * 60000) / slotCount;
-            const startTime: Date = new Date(scheduleObj.current.selectedDate.getTime());
+            const startTime: Date = new Date(scheduleObj.current.element ? new Date().getTime() : Date.now());
             startTime.setHours(
                 new Date().getHours(),
                 Math.round(startTime.getMinutes() / msInterval) * msInterval,
@@ -247,12 +246,14 @@ const Calendar = () => {
                     startTime.getMilliseconds() + msInterval
                 )
             );
-            data = { startTime, endTime, isAllDay: false };
+            data = {
+                startTime: startTime,
+                endTime: endTime,
+                isAllDay: false,
+                element: targetCell
+            };
         }
-        scheduleObj.current.openEditor(
-            extend(data, { cancel: false, event: args.event }),
-            'Add'
-        );
+        scheduleObj.current.openEditor('Add', data);
     };
 
     const onSpecialistSelect = (args: Record<string, any>): void => {
@@ -394,20 +395,6 @@ const Calendar = () => {
         return filteredEvents;
     };
 
-    const setDefaultData = (): void => {
-        scheduleObj.current.resources[0].dataSource = specialistCategory;
-        scheduleObj.current.resources[1].dataSource = resourceDataSource;
-        scheduleObj.current.resources[0].query = new Query();
-        scheduleObj.current.resources[1].query = new Query();
-        eventData.current = hospitalData.current;
-        scheduleObj.current.eventSettings.dataSource = eventData.current;
-        scheduleObj.current.refreshEvents();
-        treeObj.current.updateActiveWaitingList();
-        setWorkDays([0, 1, 2, 3, 4, 5, 6]);
-        setWorkHours({ start: '08:00', end: '21:00' });
-        activeDoctorData.current = [];
-    };
-
     const quickInfoCloseClick = (
         e: React.MouseEvent<HTMLButtonElement>
     ): void => {
@@ -516,23 +503,15 @@ const Calendar = () => {
         const onEditClick = (e: React.MouseEvent): void => {
             e.preventDefault();
             e.stopPropagation();
-
             scheduleObj.current?.closeQuickInfoPopup();
-
-            setTimeout(() => {
-                scheduleObj.current.openEditor('Edit', schedulerEvent)
-            }, 100);
+            scheduleObj.current.openEditor('Edit', schedulerEvent)
         };
 
         const onDeleteClick = (e: React.MouseEvent): void => {
             e.preventDefault();
             e.stopPropagation();
-
             scheduleObj.current?.closeQuickInfoPopup();
-
-            setTimeout(() => {
-                scheduleObj.current?.deleteEvent(schedulerEvent);
-            }, 100);
+            scheduleObj.current?.deleteEvent(schedulerEvent);
         };
 
         return (
